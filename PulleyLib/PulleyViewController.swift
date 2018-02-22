@@ -1457,22 +1457,23 @@ extension PulleyViewController: UIScrollViewDelegate {
             
             let lowestStop = drawerStops.min() ?? 0
             
-            if (scrollView.contentOffset.y - getBottomSafeArea()) > partialRevealHeight - lowestStop
+            if (scrollView.contentOffset.y - getBottomSafeArea()) > lowestStop
             {
                 // Calculate percentage between partial and full reveal
-                let fullRevealHeight = (self.drawerScrollView.bounds.height)
+                let fullRevealHeight = self.drawerScrollView.bounds.height
                 let progress: CGFloat
-                if fullRevealHeight == partialRevealHeight {
+                if fullRevealHeight == 0 {
                     progress = 1.0
                 } else {
-                    progress = (scrollView.contentOffset.y - (partialRevealHeight - lowestStop)) / (fullRevealHeight - (partialRevealHeight))
+                    progress = (scrollView.contentOffset.y - lowestStop) / fullRevealHeight
                 }
 
                 delegate?.makeUIAdjustmentsForFullscreen?(progress: progress, bottomSafeArea: getBottomSafeArea())
                 (drawerContentViewController as? PulleyDrawerViewControllerDelegate)?.makeUIAdjustmentsForFullscreen?(progress: progress, bottomSafeArea: getBottomSafeArea())
                 (primaryContentViewController as? PulleyPrimaryContentControllerDelegate)?.makeUIAdjustmentsForFullscreen?(progress: progress, bottomSafeArea: getBottomSafeArea())
-                
-                backgroundDimmingView.alpha = progress * backgroundDimmingOpacity
+
+                let progressDimming = (scrollView.contentOffset.y - lowestStop) / partialRevealHeight  // Faster dimming
+                backgroundDimmingView.alpha = min(progressDimming * 1.3, 1.0) * backgroundDimmingOpacity
                 
                 backgroundDimmingView.isUserInteractionEnabled = true
             }
